@@ -104,7 +104,10 @@ if [[ "$(yq --output-format=json e '(.. | select(tag == "!!str")) |= envsubst' /
     echo "Creating user $(_jq '.user')/$(_jq '.group') ($(_jq '.uid'):$(_jq '.gid'))"
     id -g "$(_jq '.gid')" &>/dev/null || id -gn "$(_jq '.group')" &>/dev/null || addgroup -g "$(_jq '.gid')" -S "$(_jq '.group')"
     id -u "$(_jq '.uid')" &>/dev/null || id -un "$(_jq '.user')" &>/dev/null || adduser -u "$(_jq '.uid')" -G "$(_jq '.group')" "$(_jq '.user')" -SHD
-    echo -e "$password\n$password" | smbpasswd -a -s "$(_jq '.user')"
+    if [ ! -z "$password" ] && [ "$password" != 'null' ]; then
+      echo "Setting smbpasswd for user $(_jq '.user')"
+      echo -e "$password\n$password" | smbpasswd -a -s "$(_jq '.user')"
+    fi
     unset password
   done
 fi
